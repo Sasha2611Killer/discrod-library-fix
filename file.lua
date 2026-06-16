@@ -46,10 +46,10 @@ local function MakeDraggable(topbarobject, object)
 		local newY = StartPosition.Y.Offset + Delta.Y
 
 		-- Ограничения (с учётом AnchorPoint = 0.5, 0.5)
-		local minX = -(objectSize.X / 2)
+		local minX = -(objectSize.X / 3)
 		local maxX = ViewPortSize.X - (objectSize.X / 2)
 		local minY = -(objectSize.Y / 2)
-		local maxY = ViewPortSize.Y - (objectSize.Y / 2)
+		local maxY = ViewPortSize.Y - (objectSize.Y / 3)
 
 		newX = math.clamp(newX, minX, maxX)
 		newY = math.clamp(newY, minY, maxY)
