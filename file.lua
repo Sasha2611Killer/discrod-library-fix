@@ -318,8 +318,11 @@ function DiscordLib:Window(text)
 	MinimizeBtn.MouseButton1Click:Connect(
 		function()
 			if minimized == false then
-				-- Сворачиваем - уезжаем вверх
-				local currentPos = MainFrame.Position
+				-- Сохраняем текущую позицию X
+				local currentX = MainFrame.Position.X.Scale
+				local currentXOffset = MainFrame.Position.X.Offset
+
+				-- Меняем только размер
 				MainFrame:TweenSize(
 					UDim2.new(0, 681, 0, 22),
 					Enum.EasingDirection.Out,
@@ -327,16 +330,21 @@ function DiscordLib:Window(text)
 					.3,
 					true
 				)
-				-- Поднимаем окно вверх (к топбару)
+
+				-- Меняем только Y позицию (X оставляем как был)
 				MainFrame:TweenPosition(
-					UDim2.new(0, 0, 0, 0),
+					UDim2.new(currentX, currentXOffset, 0, 0),
 					Enum.EasingDirection.Out,
 					Enum.EasingStyle.Quart,
 					.3,
 					true
 				)
 			else
-				-- Разворачиваем - возвращаем в центр
+				-- Сохраняем текущую позицию X
+				local currentX = MainFrame.Position.X.Scale
+				local currentXOffset = MainFrame.Position.X.Offset
+
+				-- Меняем только размер
 				MainFrame:TweenSize(
 					UDim2.new(0, 681, 0, 396),
 					Enum.EasingDirection.Out,
@@ -344,8 +352,10 @@ function DiscordLib:Window(text)
 					.3,
 					true
 				)
+
+				-- Меняем только Y позицию (X оставляем как был)
 				MainFrame:TweenPosition(
-					UDim2.new(0, 0, 0.5, 0),
+					UDim2.new(currentX, currentXOffset, 0.5, 0),
 					Enum.EasingDirection.Out,
 					Enum.EasingStyle.Quart,
 					.3,
