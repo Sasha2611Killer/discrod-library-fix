@@ -329,7 +329,7 @@ function DiscordLib:Window(text)
 				)
 				-- Поднимаем окно вверх (к топбару)
 				MainFrame:TweenPosition(
-					UDim2.new(0.5, 0, 0, 0),
+					UDim2.new(0, 0, 0, 0),
 					Enum.EasingDirection.Out,
 					Enum.EasingStyle.Quart,
 					.3,
@@ -345,7 +345,7 @@ function DiscordLib:Window(text)
 					true
 				)
 				MainFrame:TweenPosition(
-					UDim2.new(0.5, 0, 0.5, 0),
+					UDim2.new(0, 0, 0.5, 0),
 					Enum.EasingDirection.Out,
 					Enum.EasingStyle.Quart,
 					.3,
