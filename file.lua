@@ -32,17 +32,16 @@ local function MakeDraggable(topbarobject, object)
 	local StartPosition = nil
 
 	local function Update(input)
-		local Delta = input.Position - DragStart
+		-- Не двигаем если окно свернуто
+		if minimized then return end
 
-		-- Получаем размеры экрана и объекта
+		local Delta = input.Position - DragStart
 		local viewportSize = workspace.CurrentCamera.ViewportSize
 		local objectSize = object.AbsoluteSize
 
-		-- Вычисляем новую позицию
 		local newX = StartPosition.X.Offset + Delta.X
 		local newY = StartPosition.Y.Offset + Delta.Y
 
-		-- Ограничиваем (с учётом AnchorPoint = 0.5, 0.5)
 		local minX = -(objectSize.X / 2)
 		local maxX = viewportSize.X - (objectSize.X / 2)
 		local minY = -(objectSize.Y / 2)
@@ -334,9 +333,8 @@ function DiscordLib:Window(text)
 
 	MinimizeBtn.MouseButton1Click:Connect(
 		function()
-			local currentPos = MainFrame.Position
-
 			if minimized == false then
+				local currentPos = MainFrame.Position
 				MainFrame:TweenSize(
 					UDim2.new(0, 681, 0, 22),
 					Enum.EasingDirection.Out,
@@ -344,9 +342,15 @@ function DiscordLib:Window(text)
 					.3,
 					true
 				)
-				-- Сразу фиксируем позицию
-				MainFrame.Position = currentPos
+				-- Фиксируем позицию и сразу корректируем чтобы не выходила за экран
+				task.wait(0.35)
+				local viewportSize = workspace.CurrentCamera.ViewportSize
+				local objectSize = MainFrame.AbsoluteSize
+				local newX = math.clamp(currentPos.X.Offset, -(objectSize.X / 2), viewportSize.X - (objectSize.X / 2))
+				local newY = math.clamp(currentPos.Y.Offset, -(objectSize.Y / 2), viewportSize.Y - (objectSize.Y / 2))
+				MainFrame.Position = UDim2.new(0.5, newX, 0.5, newY)
 			else
+				local currentPos = MainFrame.Position
 				MainFrame:TweenSize(
 					UDim2.new(0, 681, 0, 396),
 					Enum.EasingDirection.Out,
@@ -354,8 +358,12 @@ function DiscordLib:Window(text)
 					.3,
 					true
 				)
-				-- Фиксируем позицию после разворачивания
-				MainFrame.Position = currentPos
+				task.wait(0.35)
+				local viewportSize = workspace.CurrentCamera.ViewportSize
+				local objectSize = MainFrame.AbsoluteSize
+				local newX = math.clamp(currentPos.X.Offset, -(objectSize.X / 2), viewportSize.X - (objectSize.X / 2))
+				local newY = math.clamp(currentPos.Y.Offset, -(objectSize.Y / 2), viewportSize.Y - (objectSize.Y / 2))
+				MainFrame.Position = UDim2.new(0.5, newX, 0.5, newY)
 			end
 			minimized = not minimized
 		end
