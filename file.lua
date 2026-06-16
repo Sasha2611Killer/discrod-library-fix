@@ -33,13 +33,30 @@ local function MakeDraggable(topbarobject, object)
 
 	local function Update(input)
 		local Delta = input.Position - DragStart
-		local pos =
-			UDim2.new(
-				StartPosition.X.Scale,
-				StartPosition.X.Offset + Delta.X,
-				StartPosition.Y.Scale,
-				StartPosition.Y.Offset + Delta.Y
-			)
+
+		-- Получаем размеры экрана и объекта
+		local viewportSize = workspace.CurrentCamera.ViewportSize
+		local objectSize = object.AbsoluteSize
+
+		-- Вычисляем новую позицию
+		local newX = StartPosition.X.Offset + Delta.X
+		local newY = StartPosition.Y.Offset + Delta.Y
+
+		-- Ограничиваем (с учётом AnchorPoint = 0.5, 0.5)
+		local minX = -(objectSize.X / 2)
+		local maxX = viewportSize.X - (objectSize.X / 2)
+		local minY = -(objectSize.Y / 2)
+		local maxY = viewportSize.Y - (objectSize.Y / 2)
+
+		newX = math.clamp(newX, minX, maxX)
+		newY = math.clamp(newY, minY, maxY)
+
+		local pos = UDim2.new(
+			StartPosition.X.Scale,
+			newX,
+			StartPosition.Y.Scale,
+			newY
+		)
 		object.Position = pos
 	end
 
@@ -317,11 +334,9 @@ function DiscordLib:Window(text)
 
 	MinimizeBtn.MouseButton1Click:Connect(
 		function()
-			if minimized == false then
-				-- Сохраняем текущую позицию
-				local savedX = MainFrame.Position.X.Offset
-				local savedY = MainFrame.Position.Y.Offset
+			local currentPos = MainFrame.Position
 
+			if minimized == false then
 				MainFrame:TweenSize(
 					UDim2.new(0, 681, 0, 22),
 					Enum.EasingDirection.Out,
@@ -329,10 +344,8 @@ function DiscordLib:Window(text)
 					.3,
 					true
 				)
-
-				-- Возвращаем позицию после анимации
-				task.wait(0.35)
-				MainFrame.Position = UDim2.new(0.5, savedX, 0.5, savedY)
+				-- Сразу фиксируем позицию
+				MainFrame.Position = currentPos
 			else
 				MainFrame:TweenSize(
 					UDim2.new(0, 681, 0, 396),
@@ -341,6 +354,8 @@ function DiscordLib:Window(text)
 					.3,
 					true
 				)
+				-- Фиксируем позицию после разворачивания
+				MainFrame.Position = currentPos
 			end
 			minimized = not minimized
 		end
