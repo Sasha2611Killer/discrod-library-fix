@@ -31,63 +31,15 @@ local function MakeDraggable(topbarobject, object)
 	local DragStart = nil
 	local StartPosition = nil
 
-	local mouse = LocalPlayer:GetMouse()
-	local ViewPortSize = Vector2.new(mouse.ViewSizeX, mouse.ViewSizeY)
-
-	-- Насколько далеко окно может выходить за экран (в процентах от размера)
-	local BounceOffset = 0.3 -- 30% от размера окна
-
 	local function Update(input)
-		-- Не двигаем если окно свернуто
-		if minimized then return end
-
 		local Delta = input.Position - DragStart
-		local objectSize = object.AbsoluteSize
-
-		-- Вычисляем новую позицию
-		local newX = StartPosition.X.Offset + Delta.X
-		local newY = StartPosition.Y.Offset + Delta.Y
-
-		-- Границы с мягким выходом (окно может выходить за экран)
-		local softMinX = -(objectSize.X * BounceOffset)
-		local softMaxX = ViewPortSize.X - (objectSize.X * (1 - BounceOffset))
-		local softMinY = -(objectSize.Y * BounceOffset)
-		local softMaxY = ViewPortSize.Y - (objectSize.Y * (1 - BounceOffset))
-
-		-- Жесткие границы (куда окно НЕ может выйти)
-		local hardMinX = -(objectSize.X / 2)
-		local hardMaxX = ViewPortSize.X - (objectSize.X / 2)
-		local hardMinY = -(objectSize.Y / 2)
-		local hardMaxY = ViewPortSize.Y - (objectSize.Y / 2)
-
-		-- Проверяем находится ли окно за мягкой границей
-		if newX < softMinX then
-			-- Плавное замедление при выходе за левую границу
-			local overshoot = softMinX - newX
-			newX = softMinX - (overshoot * 0.3) -- 30% сопротивления
-		elseif newX > softMaxX then
-			local overshoot = newX - softMaxX
-			newX = softMaxX + (overshoot * 0.3)
-		end
-
-		if newY < softMinY then
-			local overshoot = softMinY - newY
-			newY = softMinY - (overshoot * 0.3)
-		elseif newY > softMaxY then
-			local overshoot = newY - softMaxY
-			newY = softMaxY + (overshoot * 0.3)
-		end
-
-		-- Жесткий лимит (окно не может уйти полностью за экран)
-		newX = math.clamp(newX, hardMinX, hardMaxX)
-		newY = math.clamp(newY, hardMinY, hardMaxY)
-
-		local pos = UDim2.new(
-			StartPosition.X.Scale,
-			newX,
-			StartPosition.Y.Scale,
-			newY
-		)
+		local pos =
+			UDim2.new(
+				StartPosition.X.Scale,
+				StartPosition.X.Offset + Delta.X,
+				StartPosition.Y.Scale,
+				StartPosition.Y.Offset + Delta.Y
+			)
 		object.Position = pos
 	end
 
@@ -113,7 +65,7 @@ local function MakeDraggable(topbarobject, object)
 		function(input)
 			if
 				input.UserInputType == Enum.UserInputType.MouseMovement or
-				input.UserInputType == Enum.UserInputType.Touch
+					input.UserInputType == Enum.UserInputType.Touch
 			then
 				DragInput = input
 			end
@@ -365,13 +317,9 @@ function DiscordLib:Window(text)
 
 	MinimizeBtn.MouseButton1Click:Connect(
 		function()
-			local mouse = LocalPlayer:GetMouse()
-			local ViewPortSize = Vector2.new(mouse.ViewSizeX, mouse.ViewSizeY)
-
 			if minimized == false then
+				-- Сворачиваем - уезжаем вверх
 				local currentPos = MainFrame.Position
-				local currentSize = MainFrame.AbsoluteSize
-
 				MainFrame:TweenSize(
 					UDim2.new(0, 681, 0, 22),
 					Enum.EasingDirection.Out,
@@ -379,16 +327,16 @@ function DiscordLib:Window(text)
 					.3,
 					true
 				)
-
-				-- Корректируем позицию после сворачивания
-				task.wait(0.35)
-				local objectSize = MainFrame.AbsoluteSize
-				local newX = math.clamp(currentPos.X.Offset, -(objectSize.X / 2), ViewPortSize.X - (objectSize.X / 2))
-				local newY = math.clamp(currentPos.Y.Offset, -(objectSize.Y / 2), ViewPortSize.Y - (objectSize.Y / 2))
-				MainFrame.Position = UDim2.new(0.5, newX, 0.5, newY)
+				-- Поднимаем окно вверх (к топбару)
+				MainFrame:TweenPosition(
+					UDim2.new(0.5, 0, 0, 0),
+					Enum.EasingDirection.Out,
+					Enum.EasingStyle.Quart,
+					.3,
+					true
+				)
 			else
-				local currentPos = MainFrame.Position
-
+				-- Разворачиваем - возвращаем в центр
 				MainFrame:TweenSize(
 					UDim2.new(0, 681, 0, 396),
 					Enum.EasingDirection.Out,
@@ -396,13 +344,13 @@ function DiscordLib:Window(text)
 					.3,
 					true
 				)
-
-				-- Корректируем позицию после разворачивания
-				task.wait(0.35)
-				local objectSize = MainFrame.AbsoluteSize
-				local newX = math.clamp(currentPos.X.Offset, -(objectSize.X / 2), ViewPortSize.X - (objectSize.X / 2))
-				local newY = math.clamp(currentPos.Y.Offset, -(objectSize.Y / 2), ViewPortSize.Y - (objectSize.Y / 2))
-				MainFrame.Position = UDim2.new(0.5, newX, 0.5, newY)
+				MainFrame:TweenPosition(
+					UDim2.new(0.5, 0, 0.5, 0),
+					Enum.EasingDirection.Out,
+					Enum.EasingStyle.Quart,
+					.3,
+					true
+				)
 			end
 			minimized = not minimized
 		end
