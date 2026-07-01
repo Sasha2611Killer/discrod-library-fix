@@ -3171,22 +3171,21 @@ function DiscordLib:Window(text)
 				ChannelHolder.CanvasSize = UDim2.new(0,0,0,ChannelHolderLayout.AbsoluteContentSize.Y)
 			end
 			
-			function ChannelContent:Label(text)
+			function ChannelContent:Label(valueObject, extraText)
+				-- Если extraText не передан, используем пустую строку
+				extraText = extraText or ""
+
 				local Label = Instance.new("TextButton")
 				local LabelTitle = Instance.new("TextLabel")
 
 				-- Переменные
-				local ValueObject = nil
-				local StaticText = ""
 				local IsValueObject = false
+				local ValueObject = nil
 
-				-- Проверяем, является ли text объектом с Value
-				if typeof(text) == "Instance" and (text:IsA("IntValue") or text:IsA("NumberValue") or text:IsA("StringValue") or text:IsA("BoolValue")) then
+				-- Проверяем, является ли valueObject объектом с Value
+				if typeof(valueObject) == "Instance" and (valueObject:IsA("IntValue") or valueObject:IsA("NumberValue") or valueObject:IsA("StringValue") or valueObject:IsA("BoolValue")) then
 					IsValueObject = true
-					ValueObject = text
-				else
-					-- Если это не объект, сохраняем как статичный текст
-					StaticText = tostring(text)
+					ValueObject = valueObject
 				end
 
 				Label.Name = "Label"
@@ -3215,9 +3214,9 @@ function DiscordLib:Window(text)
 				-- Функция обновления текста
 				local function UpdateDisplay()
 					if IsValueObject and ValueObject then
-						LabelTitle.Text = tostring(ValueObject.Value)
+						LabelTitle.Text = tostring(ValueObject.Value) .. extraText
 					else
-						LabelTitle.Text = StaticText
+						LabelTitle.Text = tostring(valueObject) .. extraText
 					end
 				end
 
