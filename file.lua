@@ -3175,6 +3175,9 @@ function DiscordLib:Window(text)
 				local Label = Instance.new("TextButton")
 				local LabelTitle = Instance.new("TextLabel")
 
+				-- Таблица для хранения соединений
+				local connections = {}
+
 				Label.Name = "Label"
 				Label.Parent = ChannelHolder
 				Label.BackgroundColor3 = Color3.fromRGB(54, 57, 63)
@@ -3200,27 +3203,35 @@ function DiscordLib:Window(text)
 
 				-- Функция для обновления текста
 				local function UpdateText(NewText)
-					if type(NewText) == "number" then
-						LabelTitle.Text = tostring(NewText)
-					else
-						LabelTitle.Text = tostring(NewText)
-					end
+					LabelTitle.Text = tostring(NewText)
 				end
 
-				-- Установка начального значения
-				UpdateText(text)
+				-- Проверяем тип и настраиваем обновление
+				if typeof(text) == "Instance" and (text:IsA("IntValue") or text:IsA("NumberValue") or text:IsA("StringValue")) then
+					-- Устанавливаем начальное значение
+					UpdateText(text.Value)
 
-				-- Проверяем, является ли text объектом IntValue
-				if typeof(text) == "Instance" and text:IsA("IntValue") then
-					-- Подписываемся на изменение значения
-					local connection
-					connection = text.Changed:Connect(function()
+					-- Подписываемся на изменения
+					local connection = text.Changed:Connect(function()
 						UpdateText(text.Value)
 					end)
 
-					-- Сохраняем connection для возможной очистки
-					Label._UpdateConnection = connection
+					-- Сохраняем connection в таблицу
+					table.insert(connections, connection)
+				else
+					-- Если это не объект со значением, просто устанавливаем текст
+					UpdateText(text)
 				end
+
+				-- При уничтожении Label очищаем соединения
+				Label.AncestryChanged:Connect(function()
+					if not Label.Parent then
+						for _, conn in ipairs(connections) do
+							conn:Disconnect()
+						end
+						table.clear(connections)
+					end
+				end)
 
 				ChannelHolder.CanvasSize = UDim2.new(0,0,0,ChannelHolderLayout.AbsoluteContentSize.Y)
 			end
