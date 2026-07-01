@@ -3175,14 +3175,18 @@ function DiscordLib:Window(text)
 				local Label = Instance.new("TextButton")
 				local LabelTitle = Instance.new("TextLabel")
 
-				-- Определяем, является ли text объектом с Value
-				local IsValueObject = false
+				-- Переменные
 				local ValueObject = nil
+				local StaticText = ""
+				local IsValueObject = false
 
-				-- Проверяем, если text это объект с полем Value
-				if typeof(text) == "Instance" and text:IsA("IntValue") then
+				-- Проверяем, является ли text объектом с Value
+				if typeof(text) == "Instance" and (text:IsA("IntValue") or text:IsA("NumberValue") or text:IsA("StringValue") or text:IsA("BoolValue")) then
 					IsValueObject = true
 					ValueObject = text
+				else
+					-- Если это не объект, сохраняем как статичный текст
+					StaticText = tostring(text)
 				end
 
 				Label.Name = "Label"
@@ -3213,7 +3217,7 @@ function DiscordLib:Window(text)
 					if IsValueObject and ValueObject then
 						LabelTitle.Text = tostring(ValueObject.Value)
 					else
-						LabelTitle.Text = tostring(text)
+						LabelTitle.Text = StaticText
 					end
 				end
 
