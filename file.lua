@@ -3175,8 +3175,15 @@ function DiscordLib:Window(text)
 				local Label = Instance.new("TextButton")
 				local LabelTitle = Instance.new("TextLabel")
 
-				-- Таблица для хранения соединений
-				local connections = {}
+				-- Определяем, является ли text объектом с Value
+				local IsValueObject = false
+				local ValueObject = nil
+
+				-- Проверяем, если text это объект с полем Value
+				if typeof(text) == "Instance" and text:IsA("IntValue") then
+					IsValueObject = true
+					ValueObject = text
+				end
 
 				Label.Name = "Label"
 				Label.Parent = ChannelHolder
@@ -3201,37 +3208,24 @@ function DiscordLib:Window(text)
 				LabelTitle.TextSize = 14.000
 				LabelTitle.TextXAlignment = Enum.TextXAlignment.Left
 
-				-- Функция для обновления текста
-				local function UpdateText(NewText)
-					LabelTitle.Text = tostring(NewText)
-				end
-
-				-- Проверяем тип и настраиваем обновление
-				if typeof(text) == "Instance" and (text:IsA("IntValue") or text:IsA("NumberValue") or text:IsA("StringValue")) then
-					-- Устанавливаем начальное значение
-					UpdateText(text.Value)
-
-					-- Подписываемся на изменения
-					local connection = text.Changed:Connect(function()
-						UpdateText(text.Value)
-					end)
-
-					-- Сохраняем connection в таблицу
-					table.insert(connections, connection)
-				else
-					-- Если это не объект со значением, просто устанавливаем текст
-					UpdateText(text)
-				end
-
-				-- При уничтожении Label очищаем соединения
-				Label.AncestryChanged:Connect(function()
-					if not Label.Parent then
-						for _, conn in ipairs(connections) do
-							conn:Disconnect()
-						end
-						table.clear(connections)
+				-- Функция обновления текста
+				local function UpdateDisplay()
+					if IsValueObject and ValueObject then
+						LabelTitle.Text = tostring(ValueObject.Value)
+					else
+						LabelTitle.Text = tostring(text)
 					end
-				end)
+				end
+
+				-- Устанавливаем начальное значение
+				UpdateDisplay()
+
+				-- Если это объект с Value, подписываемся на изменения
+				if IsValueObject and ValueObject then
+					ValueObject.Changed:Connect(function()
+						UpdateDisplay()
+					end)
+				end
 
 				ChannelHolder.CanvasSize = UDim2.new(0,0,0,ChannelHolderLayout.AbsoluteContentSize.Y)
 			end
